@@ -12,16 +12,44 @@ for(pkg in required_packages) {
 # Load minimal required libraries
 library(ggplot2)  # For plotting
 
-# Function to load historical data
-load_data <- function(file_path = "richemont_historical_data.csv") {
-  # Check if file exists
-  if(!file.exists(file_path)) {
-    cat("Historical data file not found. Please run the scraper first.\n")
+# Function to fetch the latest Richemont historical data
+get_latest_data <- function() {
+  # Source the stock scraper to ensure we have the latest data
+  source("richemont_stock_scraper_final.R")
+  
+  # Check if the file was created by the scraper
+  if(file.exists("richemont_historical_data.csv")) {
+    return(read.csv("richemont_historical_data.csv", stringsAsFactors = FALSE))
+  } else {
+    cat("Failed to fetch latest historical data\n")
     return(NULL)
   }
+}
+
+# Function to load historical data
+load_data <- function(file_path = "richemont_historical_data.csv", refresh = FALSE) {
+  # Check if we should refresh the data
+  if(refresh) {
+    cat("Fetching latest Richemont historical data...\n")
+    data <- get_latest_data()
+    if(is.null(data)) {
+      cat("Failed to refresh data. Trying to load existing file.\n")
+    } else {
+      cat("Successfully fetched latest data.\n")
+    }
+  }
   
-  # Read the CSV
-  data <- read.csv(file_path, stringsAsFactors = FALSE)
+  # If we don't have data yet, try to load from file
+  if(!exists("data") || is.null(data)) {
+    # Check if file exists
+    if(!file.exists(file_path)) {
+      cat("Historical data file not found. Please run the scraper first.\n")
+      return(NULL)
+    }
+    
+    # Read the CSV
+    data <- read.csv(file_path, stringsAsFactors = FALSE)
+  }
   
   # Convert Date to Date type
   data$Date <- as.Date(data$Date)
@@ -158,10 +186,10 @@ save_price_chart <- function(data, filename = "richemont_price_chart.png") {
 }
 
 # Main analysis function
-run_analysis <- function() {
-  # Load the data
+run_analysis <- function(refresh_data = TRUE) {
+  # Load the data with optional refresh
   cat("Loading Richemont stock data...\n")
-  stock_data <- load_data()
+  stock_data <- load_data(refresh = refresh_data)
   
   if(is.null(stock_data)) {
     return(NULL)
@@ -217,10 +245,22 @@ run_analysis <- function() {
   cat("Highest price:", max_price, "CHF on", format(max_date, "%Y-%m-%d"), "\n")
   cat("Lowest price:", min_price, "CHF on", format(min_date, "%Y-%m-%d"), "\n")
   
+  # Calculate year-to-date performance
+  current_year <- format(Sys.Date(), "%Y")
+  ytd_data <- stock_data[format(stock_data$Date, "%Y") == current_year, ]
+  
+  if(nrow(ytd_data) > 0) {
+    start_price <- ytd_data$Close[1]
+    current_price <- tail(ytd_data$Close, 1)
+    ytd_return <- ((current_price / start_price) - 1) * 100
+    
+    cat("\nYear-to-date performance:", round(ytd_return, 2), "%\n")
+  }
+  
   cat("\nTime series analysis complete!\n")
 }
 
-# Run the analysis
+# Run the analysis with refreshed data
 cat("Starting Richemont stock time series analysis...\n")
 cat("(Basic version with minimal dependencies)\n\n")
-run_analysis() 
+run_analysis(refresh_data = TRUE) 
