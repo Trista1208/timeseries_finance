@@ -39,11 +39,7 @@ prepare_data <- function(filename = "kering_historical_data.csv") {
 
 # Function to perform basic time series analysis
 analyze_ts <- function(ts_data) {
-  # Calculate moving averages
-  ma50 <- rollmean(ts_data, k = 50, fill = NA)
-  ma200 <- rollmean(ts_data, k = 200, fill = NA)
-  
-  # Save historical price plot with moving averages
+  # Save historical price plot
   png("kering_historical_prices.png", width = 1600, height = 900, res = 150)
   
   # Set margins and plot style
@@ -60,20 +56,6 @@ analyze_ts <- function(ts_data) {
        cex.main = 1.2,
        cex.lab = 1.1,
        cex.axis = 1)
-  
-  # Add moving averages
-  lines(ma50, col = "blue", lwd = 2)
-  lines(ma200, col = "red", lwd = 2)
-  
-  # Add legend with better positioning and styling
-  legend("topleft",
-         legend = c("Price", "50-day MA", "200-day MA"),
-         col = c("black", "blue", "red"),
-         lty = 1,
-         lwd = 2,
-         bg = "white",
-         box.lty = 1,
-         cex = 0.9)
   
   # Add grid
   grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
@@ -93,12 +75,10 @@ analyze_ts <- function(ts_data) {
   cat("Total Return:", round(total_return, 2), "%\n")
   
   cat("\nPlot has been saved to:\n")
-  cat("kering_historical_prices.png (historical prices with moving averages)\n")
+  cat("kering_historical_prices.png (historical prices)\n")
   
   return(list(
-    ts_data = ts_data,
-    ma50 = ma50,
-    ma200 = ma200
+    ts_data = ts_data
   ))
 }
 
