@@ -1,0 +1,40 @@
+RICHEMONT STOCK DATA VALIDATION
+===============================
+
+Data Range: 16553 to 20202 
+Number of Observations: 2514 
+
+Price Summary:
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  49.40   73.55   85.84   95.19  116.45  184.85 
+
+Returns Summary:
+      Min.    1st Qu.     Median       Mean    3rd Qu.       Max.       NA's 
+-0.1350052 -0.0094545  0.0004237  0.0003964  0.0100834  0.1636102          1 
+
+Linear Model Summary:
+
+Call:
+lm(formula = Close ~ TimeIndex, data = richemont_data)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-44.818 -12.268   1.118  11.675  50.603 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 5.496e+01  7.058e-01   77.87   <2e-16 ***
+TimeIndex   3.200e-02  4.861e-04   65.83   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 17.69 on 2512 degrees of freedom
+Multiple R-squared:  0.633,	Adjusted R-squared:  0.6329 
+F-statistic:  4333 on 1 and 2512 DF,  p-value: < 2.2e-16
+
+
+Autocorrelation Analysis:
+           Returns       Lag1       Lag2
+Returns 1.00000000 0.01286587 0.03235774
+Lag1    0.01286587 1.00000000 0.01281266
+Lag2    0.03235774 0.01281266 1.00000000
