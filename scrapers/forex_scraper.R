@@ -7,12 +7,13 @@ library(forecast)
 library(rugarch)
 
 # Set date range
-from_date <- "2015-01-01"
-to_date <- "2024-12-31"
+from_date <- "2020-02-01"
+to_date <- "2020-04-31"
 
 # Get FX rates
 getSymbols(c("CHFEUR=X", "CHFUSD=X", "CHFCNY=X"), src = "yahoo", from = from_date, to = to_date) # nolint
 getSymbols("LUXU.PA", src = "yahoo", from = from_date, to = to_date)
+getSymbols("GC=F", src = "yahoo", from = from_date, to = to_date)
 
 # Rename for readability
 chfeur <- `CHFEUR=X`
@@ -21,6 +22,8 @@ chfcny <- `CHFCNY=X`
 combined <- merge(chfeur, chfusd, chfcny)
 
 luxury_index <- `LUXU.PA`
+
+gold <- `GC=F`
 
 # change here if you want to write to csv or plot
 currency_name <- "LUXU.PA"
@@ -47,26 +50,29 @@ ts_forex_chfeur <- chfeur[, c("CHFEUR=X.Close")]
 ts_forex_chfusd <- chfusd[, c("CHFUSD=X.Close")]
 ts_forex_chfcny <- chfcny[, c("CHFCNY=X.Close")]
 ts_luxury_index <- luxury_index[, c("LUXU.PA.Close")]
+ts_gold <- gold[, c("GC=F.Close")]
 
 log_returns_richemont <- diff(log(ts_richemont))
 log_returns_chfeur <- diff(log(ts_forex_chfeur))
 log_returns_chfusd <- diff(log(ts_forex_chfusd))
 log_returns_chfcny <- diff(log(ts_forex_chfcny))
 log_returns_luxury_index <- diff(log(ts_luxury_index))
+log_returns_gold <- diff(log(ts_gold))
 
 log_returns_chfcny <- na.omit(log_returns_chfcny)
 log_returns_chfeur <- na.omit(log_returns_chfeur)
 log_returns_chfusd <- na.omit(log_returns_chfusd)
 log_returns_luxury_index <- na.omit(log_returns_luxury_index)
+log_returns_gold <- na.omit(log_returns_gold)
 
-plot(log_returns_chfeur, main = "Forex Log Returns")
+plot(log_returns_gold, main = "Gold Log Returns")
 plot(log_returns_richemont, main = "Richemont Log Returns")
 
 # align all ts to the same date and combine in one array
 merged_data <- Reduce(function(x, y) merge(x, y, join = "inner"),
-                      list(log_returns_richemont, log_returns_chfeur, log_returns_chfusd, log_returns_chfcny, log_returns_luxury_index)) # nolint
+                      list(log_returns_richemont, log_returns_chfeur, log_returns_chfusd, log_returns_chfcny, log_returns_luxury_index, log_returns_gold)) # nolint
 
-colnames(merged_data) <- c("Richemont", "CHFEUR", "CHFUSD", "CHFCNY", "LUX_INDEX")
+colnames(merged_data) <- c("Richemont", "CHFEUR", "CHFUSD", "CHFCNY", "LUX_INDEX", "GOLD")
 merged_data <- na.omit(merged_data)
 
 #check for stationarity
@@ -75,27 +81,25 @@ adf.test(log_returns_chfeur)
 adf.test(log_returns_chfusd)
 adf.test(log_returns_chfcny)
 adf.test(log_returns_luxury_index)
+adf.test(log_returns_gold)
 
 #prepare train/test split
-split_date <- "2022-12-31"
+split_date <- "2020-04-10"
 train_data <- merged_data[paste0("/", split_date)]
 test_data  <- merged_data[paste0(as.Date(split_date) + 1, "/")]
 
 
 #fit linear model to see if forex data can explain richemont data
-lm_model <- lm(Richemont ~ CHFEUR + CHFUSD + CHFCNY, data = train_data)
+lm_model <- lm(Richemont ~ CHFEUR + CHFUSD + CHFCNY + GOLD, data = train_data)
+summary(lm_model)
 plot(residuals(lm_model), main = "Residuals of LM Model")
 
 lm_pred <- predict(lm_model, newdata = test_data)
 summary(lm_pred)
 
-lm_luxindex <- lm(Richemont ~ LUX_INDEX + CHFUSD, data = train_data)
-lm_luxindex_pred <- predict(lm_luxindex, newdata = test_data)
-summary(lm_luxindex)
-
 plot(index(test_data), test_data$Richemont, type = "l", col = "black", lwd = 2,
      ylab = "Richemont", main = "Actual vs Predicted")
-lines(index(test_data), lm_luxindex_pred, col = "blue", lwd = 2)
+lines(index(test_data), lm_pred, col = "blue", lwd = 2)
 legend("topright", legend = c("Actual", "Predicted"), col = c("black", "blue"), lty = 1)
 
 #arima
@@ -104,7 +108,7 @@ forecast(model, h = 10)
 
 #Build ARIMAX Model to explain Richemont returns based on Forex Rates
 y <- train_data$Richemont
-x <- train_data[, c("CHFEUR", "CHFUSD", "CHFCNY", "LUX_INDEX")]
+x <- train_data[, c("GOLD")]
 
 model_arimax <- auto.arima(y, xreg = x)
 
@@ -145,7 +149,7 @@ summary(arimax_weekly)
 #try monthly returns
 monthly_returns <- apply.monthly(train_data, colMeans)
 y_monthly <- monthly_returns$Richemont
-x_monthly <- monthly_returns[, c("CHFEUR", "CHFUSD", "CHFCNY", "LUX_INDEX")]
+x_monthly <- monthly_returns[, c("CHFEUR", "CHFUSD", "CHFCNY", "GOLD")]
 
 arimax_monthly <- auto.arima(y_monthly, xreg = x_monthly)
 summary(arimax_monthly)
