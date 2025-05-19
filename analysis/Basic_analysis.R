@@ -17,7 +17,7 @@ dates_gold <- seq(from = start_date, by = "days", length.out = nrow(gold_data))
 dates_fx   <- seq(from = start_date, by = "days", length.out = nrow(forex_data))
 dates_lux  <- seq(from = start_date, by = "days", length.out = nrow(luxury_index))
 
-ts_richemont <- xts(richemont_data$close, order.by = as.Date(richemont_data$Date))
+ts_richemont <- xts(richemont_data$Close, order.by = as.Date(richemont_data$Date))
 ts_chfeur <- xts(forex_data$CHFEUR.X.Close, order.by = dates_fx)
 ts_chfusd <- xts(forex_data$CHFUSD.X.Close, order.by = dates_fx)
 ts_chfcny <- xts(forex_data$CHFCNY.X.Close, order.by = dates_fx)
@@ -31,6 +31,7 @@ log_returns_chfcny <- diff(log(ts_chfcny))
 log_returns_luxury_index <- diff(log(ts_lux))
 log_returns_gold <- diff(log(ts_gold))
 
+log_returns_richemont <- na.omit(log_returns_richemont)
 log_returns_chfcny <- na.omit(log_returns_chfcny)
 log_returns_chfeur <- na.omit(log_returns_chfeur)
 log_returns_chfusd <- na.omit(log_returns_chfusd)
@@ -62,7 +63,7 @@ test_data  <- merged_data[paste0(as.Date(split_date) + 1, "/")]
 
 
 #fit linear model to see if forex data can explain richemont data
-lm_model <- lm(Richemont ~ LUX_INDEX + GOLD, data = train_data)
+lm_model <- lm(Richemont ~ CHFEUR + CHFUSD + LUX_INDEX, data = train_data)
 summary(lm_model)
 plot(residuals(lm_model), main = "Residuals of LM Model")
 
