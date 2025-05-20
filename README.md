@@ -24,6 +24,7 @@ timeseries_finance/
 ### Data Collection
 - Historical stock price data for Richemont and other luxury brands
 - Currency exchange rate data for CHF, EUR, USD, and CNY
+- Gold price data for safe haven analysis
 - Automated data collection scripts in R
 
 ### Analysis Components
@@ -32,6 +33,8 @@ timeseries_finance/
 - Yearly correlation breakdowns
 - Linear modeling of stock prices against currency movements
 - Residual analysis
+- Comparative analysis between major luxury brands (Richemont, LVMH, Kering)
+- Gold price correlation with luxury brand performance
 
 ### Validation
 - Stock price trend validation
@@ -41,10 +44,28 @@ timeseries_finance/
 
 ## Key Findings
 
+### Currency Analysis
 - Richemont stock prices show varying correlation patterns with different currencies
 - Yearly correlation analysis reveals changing relationships over time
 - The strongest correlations are observed with the EUR/CHF exchange rate
 - China's currency (CNY) shows significant influence during certain time periods
+
+### Gold Analysis
+- Gold price movements demonstrate hedging characteristics during market volatility
+- ARIMAX modeling using gold as an exogenous variable improves prediction accuracy for luxury brand stocks
+- Gold shows stronger correlation with Richemont compared to other luxury brands, likely due to Richemont's significant jewelry segment
+- During economic uncertainty, gold price correlation with luxury brands increases, suggesting interconnected safe haven dynamics
+
+### Luxury Brand Comparison
+- LVMH has shown the strongest overall performance in the luxury sector
+- Kering demonstrates higher volatility compared to Richemont and LVMH
+- Monthly return correlations between brands indicate synchronized market movements
+- Comparative analysis reveals different sensitivities to currency fluctuations among the major luxury brands
+
+### Nonlinear Relationships
+- Complex nonlinear models outperform simple linear models in explaining stock price movements
+- Interaction effects between currencies have significant predictive power
+- Time-lagged currency effects show that exchange rate movements can predict future stock price changes
 
 ## Getting Started
 
@@ -66,6 +87,7 @@ The analysis generates several outputs:
 - Correlation matrices in CSV format
 - Time series plots in PNG format
 - Statistical summaries and model diagnostics
+- Comparative analysis of luxury brand performance
 
 ## Future Work
 
@@ -73,3 +95,4 @@ The analysis generates several outputs:
 - Implement more sophisticated time series models (ARIMA, GARCH)
 - Expand analysis to more luxury brands for comparison
 - Develop predictive models based on currency movements
+- Investigate ESG factors and their impact on luxury brand performance
