@@ -37,6 +37,7 @@ log_returns_luxury_index <- diff(log(lux_index))
 log_returns_gold <- diff(log(gold))
 
 log_returns_richemont <- na.omit(log_returns_richemont)
+log_returns_richemont <- na.omit(log_returns_richemont)
 log_returns_chfcny <- na.omit(log_returns_chfcny)
 log_returns_chfeur <- na.omit(log_returns_chfeur)
 log_returns_chfusd <- na.omit(log_returns_chfusd)
