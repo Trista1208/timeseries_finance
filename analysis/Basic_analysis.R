@@ -25,9 +25,23 @@ str(lux_index)
 str(gold)
 
 #prepare the data
+<<<<<<< HEAD
 ts_richemont <- xts(richemont_data$Close, order.by = as.Date(richemont_data$Date)) # nolint
 richemont_data$Date <- as.Date(richemont_data$Date, format = "%Y-%m-%d")
 richemont_data$Close <- as.numeric(richemont_data$Close)
+=======
+start_date = as.Date("2015-01-01")
+dates_gold <- seq(from = start_date, by = "days", length.out = nrow(gold_data))
+dates_fx   <- seq(from = start_date, by = "days", length.out = nrow(forex_data))
+dates_lux  <- seq(from = start_date, by = "days", length.out = nrow(luxury_index))
+
+ts_richemont <- xts(richemont_data$Close, order.by = as.Date(richemont_data$Date))
+ts_chfeur <- xts(forex_data$CHFEUR.X.Close, order.by = dates_fx)
+ts_chfusd <- xts(forex_data$CHFUSD.X.Close, order.by = dates_fx)
+ts_chfcny <- xts(forex_data$CHFCNY.X.Close, order.by = dates_fx)
+ts_lux <- xts(luxury_index$LUXU.PA.Close, order.by = dates_lux)
+ts_gold <- xts(gold_data$GC.F.Close, order.by = dates_gold)
+>>>>>>> 89465b8be949297fb15057913171a97deff2b363
 
 log_returns_richemont <- diff(log(ts_richemont))
 log_returns_chfeur <- diff(log(chfeur_close))
@@ -77,7 +91,11 @@ train_2020 <- data_2020[paste0("/", split_date)]
 test_2020  <- data_2020[paste0(as.Date(split_date) + 1, "/")]
 
 #fit linear model to see if forex data can explain richemont data
+<<<<<<< HEAD
 lm_model <- lm(Richemont ~ CHFEUR + CHFUSD, data = train_2020)
+=======
+lm_model <- lm(Richemont ~ CHFEUR + CHFUSD + LUX_INDEX, data = train_data)
+>>>>>>> 89465b8be949297fb15057913171a97deff2b363
 summary(lm_model)
 plot(residuals(lm_model), main = "Residuals of LM Model")
 
