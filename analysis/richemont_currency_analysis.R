@@ -26,17 +26,28 @@ print("Date ranges:")
 print(paste("Richemont data from", min(richemont_data$Date), "to", max(richemont_data$Date)))
 print(paste("Currency data from", min(currency_data$Date), "to", max(currency_data$Date)))
 
-# Rename the currency columns for easier access
+# Rename the currency columns for easier accessC:\Users\vincent schreyer\PycharmProjects\timeseries_analysis\timeseries_finance
 currency_data <- currency_data %>%
   rename(
     CHF_EUR = CHFEUR.X.Close,
     CHF_USD = CHFUSD.X.Close,
     CHF_CNY = CHFCNY.X.Close
   )
+  
 
 # Merge the datasets with matching dates
 combined_data <- merge(richemont_data, currency_data, by = "Date", all = FALSE)
 print(paste("Number of rows after merging:", nrow(combined_data)))
+
+logret_combined_data <- diff(log(as.matrix(numeric_data)))
+
+numeric_data <- combined_data[, sapply(combined_data, is.numeric)]
+logret_combined_data <- diff(log(numeric_data))
+combined_data <- na.omit(combined_data)
+
+
+lm_model = lm(logret_combined_data$Close ~ logret_combined_data$CHF_EUR, logret_combined_data$CHF_USD, logret_combined_data$CHF_CNY, data = logret_combined_data)
+summary(lm_model)
 
 # If we have no exact date matches, we need to adjust one of the datasets
 if(nrow(combined_data) == 0) {

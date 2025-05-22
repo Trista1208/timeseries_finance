@@ -9,7 +9,7 @@ library(FinTS)
 
 # load data
 richemont_data <- read.csv("C:\\Users\\vincent schreyer\\PycharmProjects\\Timeseries_Analysis\\timeseries_finance\\data\\richemont_historical_data.csv") # nolint
-load("yahoo_data.RData")
+load("yahoo_data_2015.RData")
 
 chfeur_close <- chfeur[, "CHFEUR=X.Close"]
 chfusd_close <- chfusd[, "CHFUSD=X.Close"]
@@ -25,23 +25,9 @@ str(lux_index)
 str(gold)
 
 #prepare the data
-<<<<<<< HEAD
 ts_richemont <- xts(richemont_data$Close, order.by = as.Date(richemont_data$Date)) # nolint
 richemont_data$Date <- as.Date(richemont_data$Date, format = "%Y-%m-%d")
 richemont_data$Close <- as.numeric(richemont_data$Close)
-=======
-start_date = as.Date("2015-01-01")
-dates_gold <- seq(from = start_date, by = "days", length.out = nrow(gold_data))
-dates_fx   <- seq(from = start_date, by = "days", length.out = nrow(forex_data))
-dates_lux  <- seq(from = start_date, by = "days", length.out = nrow(luxury_index))
-
-ts_richemont <- xts(richemont_data$Close, order.by = as.Date(richemont_data$Date))
-ts_chfeur <- xts(forex_data$CHFEUR.X.Close, order.by = dates_fx)
-ts_chfusd <- xts(forex_data$CHFUSD.X.Close, order.by = dates_fx)
-ts_chfcny <- xts(forex_data$CHFCNY.X.Close, order.by = dates_fx)
-ts_lux <- xts(luxury_index$LUXU.PA.Close, order.by = dates_lux)
-ts_gold <- xts(gold_data$GC.F.Close, order.by = dates_gold)
->>>>>>> 89465b8be949297fb15057913171a97deff2b363
 
 log_returns_richemont <- diff(log(ts_richemont))
 log_returns_chfeur <- diff(log(chfeur_close))
@@ -76,8 +62,7 @@ adf.test(log_returns_luxury_index)
 adf.test(log_returns_gold)
 
 #check for correlation in between time series
-cor(merged_data$Richemont, merged_data$GOLD, use = "complete.obs")
-
+cor(merged_data$Richemont, merged_data$CHFEUR, use = "complete.obs")
 
 #prepare train/test split
 split_date <- "2022-12-31"
@@ -91,20 +76,16 @@ train_2020 <- data_2020[paste0("/", split_date)]
 test_2020  <- data_2020[paste0(as.Date(split_date) + 1, "/")]
 
 #fit linear model to see if forex data can explain richemont data
-<<<<<<< HEAD
-lm_model <- lm(Richemont ~ CHFEUR + CHFUSD, data = train_2020)
-=======
-lm_model <- lm(Richemont ~ CHFEUR + CHFUSD + LUX_INDEX, data = train_data)
->>>>>>> 89465b8be949297fb15057913171a97deff2b363
+lm_model <- lm(Richemont ~ CHFEUR + CHFUSD + CHFCNY + LUX_INDEX + GOLD, data = train_data)
 summary(lm_model)
 plot(residuals(lm_model), main = "Residuals of LM Model")
 
-lm_pred <- predict(lm_model, newdata = test_2020)
+lm_pred <- predict(lm_model, newdata = test_data)
 summary(lm_pred)
 
-plot(index(test_2020), test_2020$Richemont, type = "l", col = "black", lwd = 2,
+plot(index(test_data), test_data$Richemont, type = "l", col = "black", lwd = 2,
      ylab = "Richemont", main = "Actual vs Predicted")
-lines(index(test_2020), lm_pred, col = "blue", lwd = 2)
+lines(index(test_data), lm_pred, col = "blue", lwd = 2)
 legend("topright", legend = c("Actual", "Predicted"), col = c("black", "blue"), lty = 1)
 
 #arima
@@ -113,13 +94,16 @@ forecast(model, h = 10)
 tsdisplay(residuals(model))
 
 #Build ARIMAX Model to explain Richemont returns based on Forex Rates
-y <- train_2020$Richemont
-x <- train_2020[, c("CHFEUR", "CHFUSD", "CHFCNY")]
+y <- train_data$Richemont
+x <- train_data[, c("CHFEUR", "CHFUSD", "CHFCNY")]
 
 model_arimax <- auto.arima(y, xreg = x)
 
+forecast_obj <- forecast(model_arimax, xreg = test_data[, c("CHFEUR", "CHFUSD", "CHFCNY")])
+plot(forecast_obj)
+
 #collect model residuals
-res <- residuals(model_arimax)
+res <- residuals(lm_model)
 
 #check for heteroskedasticity
 ArchTest(res)
@@ -132,7 +116,7 @@ spec <- ugarchspec(
 
 garch_fit <- ugarchfit(spec, res)
 volatility <- sigma(garch_fit)
-vol_xts <- xts(volatility, order.by = index(train_2020))
+vol_xts <- xts(volatility, order.by = index(train_data))
 
 plot(vol_xts, type = "l", col = "blue", lwd = 2,
      main = "Conditional Volatility from GARCH Model",
@@ -177,9 +161,9 @@ plot(forecast_obj)
 
 
 #try a lagged model to capture forex influence
-lag1 <- lag.xts(merged_data[, c("CHFEUR", "CHFUSD", "CHFCNY")], k = 1)
-lag2 <- lag.xts(merged_data[, c("CHFEUR", "CHFUSD", "CHFCNY")], k = 2)
-lag5 <- lag.xts(merged_data[, c("CHFEUR", "CHFUSD", "CHFCNY")], k = 5)
+lag1 <- lag.xts(train_data[, c("CHFEUR", "CHFUSD", "CHFCNY")], k = 1)
+lag2 <- lag.xts(train_data[, c("CHFEUR", "CHFUSD", "CHFCNY")], k = 2)
+lag5 <- lag.xts(train_data[, c("CHFEUR", "CHFUSD", "CHFCNY")], k = 5)
 
 x_lagged <- Reduce(function(x, y) merge(x, y, join = "inner"),
                    list(lag1, lag2, lag5))
@@ -241,3 +225,67 @@ ggplot(long_df, aes(x = date, y = value, color = series)) +
        color = "Series") +
   theme_minimal() +
   theme(aspect.ratio = 0.5)
+
+
+################################################################################################################
+#create report
+# Set file name
+output_file <- "model_summary.txt"
+
+# Open connection to file
+sink(output_file)
+
+# ---- HEADER ----
+cat("Richemont Regression Summary\n")
+cat("Generated on: ", Sys.Date(), "\n\n")
+
+# ---- Data Summary ----
+cat("Data Summary:\n")
+cat("Training period: ", min(index(train_data)), " to ", max(index(train_data)), "\n")
+cat("Number of observations: ", nrow(train_data), "\n\n")
+
+# ---- Descriptive Stats ----
+cat("Log Return Summary:\n")
+summary(train_data$Richemont)
+cat("\n")
+
+# ---- Correlation Matrix ----
+cat("Correlation Matrix:\n")
+print(cor(train_data[, c("Richemont", "CHFEUR", "CHFUSD", "CHFCNY", "LUX_INDEX", "GOLD")], use = "complete.obs"))
+cat("\n")
+
+# ---- Linear Model ----
+cat("Linear Regression Model:\n")
+lm_model <- lm(Richemont ~ CHFEUR + CHFUSD + CHFCNY + LUX_INDEX + GOLD, data = train_data)
+print(summary(lm_model))
+cat("\n")
+
+# ---- ARIMAX Model ----
+cat("ARIMAX Model Summary:\n")
+library(forecast)
+y <- train_data$Richemont
+x <- train_data[, c("CHFEUR", "CHFUSD", "CHFCNY", "LUX_INDEX", "GOLD")]
+model_arimax <- auto.arima(y, xreg = x)
+print(summary(model_arimax))
+cat("\n")
+
+# ---- GARCH Model ----
+cat("GARCH Residual Volatility:\n")
+library(rugarch)
+res <- residuals(model_arimax)
+
+spec <- ugarchspec(
+  variance.model = list(model = "sGARCH", garchOrder = c(1, 1)),
+  mean.model = list(armaOrder = c(0, 0), include.mean = FALSE)
+)
+
+garch_fit <- ugarchfit(spec, res)
+print(garch_fit)
+cat("\n")
+
+# Close the connection
+sink()
+
+cat("✅ Summary written to: ", output_file, "\n")
+
+ 

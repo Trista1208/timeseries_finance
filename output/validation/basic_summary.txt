@@ -26,7 +26,7 @@ Coefficients:
 (Intercept) 5.496e+01  7.058e-01   77.87   <2e-16 ***
 TimeIndex   3.200e-02  4.861e-04   65.83   <2e-16 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Residual standard error: 17.69 on 2512 degrees of freedom
 Multiple R-squared:  0.633,	Adjusted R-squared:  0.6329 
