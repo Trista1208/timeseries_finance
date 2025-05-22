@@ -1,0 +1,19 @@
+BEST MODEL: Complex 
+
+Formula:
+Close ~ EUR_CHF + USD_CHF + CNY_CHF + EUR_squared + USD_squared + 
+    EUR_USD + EUR_CNY + log_EUR + log_USD + log_CNY
+
+Coefficients:
+ (Intercept)      EUR_CHF      USD_CHF      CNY_CHF  EUR_squared  USD_squared 
+-196718.2206  244270.2628   14152.8634     295.0145  -57034.0887   -4533.2197 
+     EUR_USD      EUR_CNY      log_EUR      log_USD      log_CNY 
+   1982.1021     228.8869 -133846.3169   -7222.3825   -2911.7647 
+
+Shapiro-Wilk Normality Test for Residuals:
+
+	Shapiro-Wilk normality test
+
+data:  best_residuals
+W = 0.96321, p-value < 2.2e-16
+
